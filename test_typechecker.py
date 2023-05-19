@@ -151,6 +151,27 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, "FAZ")
 
+    def test_class_instance_inheritance(self):
+        # Given
+        class Foo:
+            def get_val(self):
+                return 5
+
+        class Faz(Foo):
+            pass
+
+        faz = Faz()
+
+        @typecheck(Foo)
+        def bar(obj):
+            return obj.get_val()
+
+        # When
+        res = bar(obj=faz)
+
+        # Then
+        self.assertEqual(res, 5)
+
     def test_wrong_class_instance_as_argument(self):
         # Given
         class Foo:
