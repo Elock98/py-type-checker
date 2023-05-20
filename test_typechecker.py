@@ -101,6 +101,97 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, (1, 3.5**2, "FOO"))
 
+    def test_multiple_options_arg(self):
+        # Given
+        class Foo:
+            pass
+
+        @typecheck(int, str, (Foo, int, float))
+        def bar(a, b, c):
+            return (type(a), type(b), type(c))
+
+        # When
+        res1 = bar(1, "2", 3.4)
+        res2 = bar(1, "2", 3)
+        res3 = bar(1, "2", Foo())
+
+        with self.assertRaises(Exception) as exep:
+            bar(1, "2", "FOO")
+
+        # Then
+        self.assertEqual(res1, (int, str, float))
+        self.assertEqual(res2, (int, str, int))
+        self.assertEqual(res3, (int, str, Foo))
+        self.assertTrue(str(exep.exception).startswith("TypeError: FOO"))
+        self.assertTrue(str(exep.exception).endswith("is of type <class 'str'>, not of type (<class '__main__.TestTypeChecker.test_multiple_options_arg.<locals>.Foo'>, <class 'int'>, <class 'float'>)"))
+
+    def test_multiple_options_kwarg(self):
+        # Given
+        class Foo:
+            pass
+
+        @typecheck(int, str, (Foo, int, float))
+        def bar(a, b, c):
+            return (type(a), type(b), type(c))
+
+        # When
+        res1 = bar(c=3.4, a=1, b="2")
+        res2 = bar(c=1, a=1, b="2")
+        res3 = bar(c=Foo(), a=1, b="2")
+
+        with self.assertRaises(Exception) as exep:
+            bar(c="FOO", a=1, b="2")
+
+        # Then
+        self.assertEqual(res1, (int, str, float))
+        self.assertEqual(res2, (int, str, int))
+        self.assertEqual(res3, (int, str, Foo))
+        self.assertTrue(str(exep.exception).startswith("TypeError: FOO"))
+        self.assertTrue(str(exep.exception).endswith("is of type <class 'str'>, not of type (<class '__main__.TestTypeChecker.test_multiple_options_kwarg.<locals>.Foo'>, <class 'int'>, <class 'float'>)"))
+
+    def test_multiple_options_arg_ignore(self):
+        # Given
+        class Foo:
+            pass
+
+        @typecheck(int, str, (Foo, "pass", float))
+        def bar(a, b, c):
+            return (type(a), type(b), type(c))
+
+        # When
+        res1 = bar(1, "2", 3.4)
+        res2 = bar(1, "2", 3)
+        res3 = bar(1, "2", Foo())
+        res4 = bar(1, "2", "3")
+
+        # Then
+        self.assertEqual(res1, (int, str, float))
+        self.assertEqual(res2, (int, str, int))
+        self.assertEqual(res3, (int, str, Foo))
+        self.assertEqual(res4, (int, str, str))
+
+
+    def test_multiple_options_kwarg_ignore(self):
+        # Given
+        class Foo:
+            pass
+
+        @typecheck(int, str, (Foo, "pass", float))
+        def bar(a, b, c):
+            return (type(a), type(b), type(c))
+
+        # When
+        res1 = bar(c=3.4, a=1, b="2")
+        res2 = bar(c=1, a=1, b="2")
+        res3 = bar(c=Foo(), a=1, b="2")
+        res4 = bar(c="3", a=1, b="2")
+
+        # Then
+        self.assertEqual(res1, (int, str, float))
+        self.assertEqual(res2, (int, str, int))
+        self.assertEqual(res3, (int, str, Foo))
+        self.assertEqual(res4, (int, str, str))
+
     def test_check_expression(self):
         # Given
         @typecheck(int, float)
