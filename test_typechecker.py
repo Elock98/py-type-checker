@@ -27,6 +27,32 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 5)
 
+    def test_check_nonetype(self):
+        # Given
+        @typecheck(None, int)
+        def foo(n, i):
+            return i
+
+        # When
+        res = foo(None, 5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+    def test_check_no_nonetype(self):
+        # Given
+        @typecheck(None, int)
+        def foo(n, i):
+            return i
+
+        # When
+        with self.assertRaises(Exception) as exep:
+            foo(6, 5)
+
+        # Then
+        self.assertEqual(str(exep.exception),
+                "TypeError: 6 is of type <class 'int'>, not of type <class 'NoneType'>")
+
     def test_check_expression(self):
         # Given
         @typecheck(int, float)

@@ -26,6 +26,8 @@ def typecheck(*check_args):
                     else:
                         if not isinstance(check_args[index], list):
                             arg_type = locate(check_args[index]) # Convert check arg string to type
+                            if arg_type is None:
+                                arg_type = type(None)
                         else:
                             arg_type = check_args[index][0]
                         assert isinstance(arg, arg_type), \
