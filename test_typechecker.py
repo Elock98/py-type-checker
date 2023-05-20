@@ -109,6 +109,18 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, "FOO")
 
+    def test_lambda_as_arg(self):
+        # Given
+        @typecheck(callable)
+        def foo(fn):
+            return fn(5)
+
+        # When
+        res = foo(lambda x: x**2)
+
+        # Then
+        self.assertEqual(res, 25)
+
     def test_class_instance_as_argument(self):
         # Given
         class Foo:
