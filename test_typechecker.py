@@ -384,6 +384,69 @@ class TestTypeChecker(unittest.TestCase):
         self.assertTrue(str(exep.exception).startswith("TypeError: <__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo"))
         self.assertTrue(str(exep.exception).endswith("is of type <class '__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo'>, not of type <class '__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Baz'>"))
 
+    def test_check_instance_method_args(self):
+        # Given
+        class Foo:
+            @typecheck("pass", int)
+            def bar(self, i):
+                return i
+
+        foo = Foo()
+
+        # When
+        res = foo.bar(5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+
+    def test_check_class_method_args(self):
+        # Given
+        class Foo:
+            @classmethod
+            @typecheck("pass", int)
+            def bar(self, i):
+                return i
+
+        foo = Foo()
+
+        # When
+        res = foo.bar(5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+    def test_check_instance_method_kwargs(self):
+        # Given
+        class Foo:
+            @typecheck("pass", int)
+            def bar(self, i):
+                return i
+
+        foo = Foo()
+
+        # When
+        res = foo.bar(i=5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+    def test_check_class_method_kwargs(self):
+        # Given
+        class Foo:
+            @classmethod
+            @typecheck("pass", int)
+            def bar(self, i):
+                return i
+
+        foo = Foo()
+
+        # When
+        res = foo.bar(i=5)
+
+        # Then
+        self.assertEqual(res, 5)
+
     def test_kwargs_ordered(self):
         # Given
         @typecheck(int, str)
