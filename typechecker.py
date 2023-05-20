@@ -20,7 +20,9 @@ def typecheck(*check_args):
                         f"TypecheckError: Cannot check all arguments given, not enough typecheck args given"
                 # Check args
                 for index, arg in enumerate(args):
-                    if check_args[index] == 'callable':
+                    if check_args[index] == "pass":
+                        continue
+                    elif check_args[index] == 'callable':
                         assert callable(arg), \
                             f"TypeError: {arg} is of type {type(arg)}, not of type callable"
                     else:
@@ -38,7 +40,9 @@ def typecheck(*check_args):
                 parameters = [param.strip() for param in parameters]
                 for param, value in kwargs.items():
                     if param in parameters:
-                        if check_args[parameters.index(param)] == "callable":
+                        if check_args[parameters.index(param)] == "pass":
+                            continue
+                        elif check_args[parameters.index(param)] == "callable":
                             assert callable(value), \
                                 f"TypeError: {arg} is of type {type(arg)}, not of type callable"
                         else:
@@ -57,11 +61,13 @@ def typecheck(*check_args):
     # If no types given, leave as it is;
     # If class insert into sub-list;
     # If function set to callable check;
+    # If string 'pass' leave it
     # Else send primitive type as string;
     check_args = [arg if str(arg).startswith("<function") else \
-            [arg] if str(arg).startswith("<class '__main__.") else \
-            'callable' if str(arg) == '<built-in function callable>' else \
-            str(arg).replace("<class '", "").replace("'>", "") for arg in check_args]
+                  arg if arg == "pass" else \
+                  [arg] if str(arg).startswith("<class '__main__.") else \
+                  'callable' if str(arg) == '<built-in function callable>' else \
+                  str(arg).replace("<class '", "").replace("'>", "") for arg in check_args]
 
     if callable(check_args[0]):
         return wrapper(check_args[0])

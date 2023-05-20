@@ -53,6 +53,54 @@ class TestTypeChecker(unittest.TestCase):
         self.assertEqual(str(exep.exception),
                 "TypeError: 6 is of type <class 'int'>, not of type <class 'NoneType'>")
 
+    def test_ignore(self):
+        # Given
+        @typecheck("pass")
+        def foo(bar):
+            return bar
+
+        # When
+        res = foo(3)
+
+        # Then
+        self.assertEqual(res, 3)
+
+    def test_ignore_some(self):
+        # Given
+        @typecheck(int, "pass", str)
+        def foo(faz, bar, baz):
+            return (faz, bar, baz)
+
+        # When
+        res = foo(1, 3.5**2, "FOO")
+
+        # Then
+        self.assertEqual(res, (1, 3.5**2, "FOO"))
+
+    def test_ignore_kwarg(self):
+        # Given
+        @typecheck("pass")
+        def foo(bar):
+            return bar
+
+        # When
+        res = foo(bar=3)
+
+        # Then
+        self.assertEqual(res, 3)
+
+    def test_ignore_some_kwarg(self):
+        # Given
+        @typecheck(int, "pass", str)
+        def foo(faz, bar, baz):
+            return (faz, bar, baz)
+
+        # When
+        res = foo(baz="FOO", faz=1, bar=3.5**2)
+
+        # Then
+        self.assertEqual(res, (1, 3.5**2, "FOO"))
+
     def test_check_expression(self):
         # Given
         @typecheck(int, float)
