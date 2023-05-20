@@ -27,6 +27,18 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 5)
 
+    def test_check_expression(self):
+        # Given
+        @typecheck(int, float)
+        def foo(i, f):
+            return (i, f)
+
+        # When
+        res = foo(1+3, 5/3)
+
+        # Then
+        self.assertEqual(res, (1+3, 5/3))
+
     def test_check_args_type_err(self):
         # Given
         @typecheck(int)
