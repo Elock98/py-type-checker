@@ -27,6 +27,30 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 5)
 
+    def test_check_kwargs(self):
+        # Given
+        @typecheck(bar=int)
+        def foo(bar):
+            return bar
+
+        # When
+        res = foo(5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+    def test_check_multiple_kwargs(self):
+        # Given
+        @typecheck(baz=int, bar=str)
+        def foo(bar, baz):
+            return (bar, baz)
+
+        # When
+        res = foo("1", baz=5)
+
+        # Then
+        self.assertEqual(res, ("1", 5))
+
     def test_check_nonetype(self):
         # Given
         @typecheck(None, int)

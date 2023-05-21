@@ -2,17 +2,32 @@ from functools import wraps
 from pydoc import locate
 import inspect
 
-def typecheck(*check_args):
+def typecheck(*check_args, **check_kwargs):
     """
         Checks that arguments passed to function
         is of the type passed to the typechecker.
     """
 
     def get_fn_param(fn):
-        return str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")
+        return [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
 
     def pass_filter(tup):
         return tup if "pass" not in tup else "pass"
+
+    def parse_check_kwargs(fn, check_args):
+        params = get_fn_param(fn)
+
+        for index, param in enumerate(params):
+            if param in check_kwargs:
+                # Process and add to check_args
+                check_args.insert(index, \
+                    check_kwargs[param] if str(check_kwargs[param]).startswith("<function") else \
+                    check_kwargs[param] if check_kwargs[param] == "pass" else \
+                    pass_filter(check_kwargs[param]) if isinstance(check_kwargs[param], tuple) else \
+                    [check_kwargs[param]] if str(check_kwargs[param]).startswith("<class '__main__.") else \
+                    'callable' if str(check_kwargs[param]) == '<built-in function callable>' else \
+                    str(check_kwargs[param]).replace("<class '", "").replace("'>", "")
+                    )
 
     def parse_check_args(ca):
         # Convert input to managable type
@@ -37,6 +52,7 @@ def typecheck(*check_args):
     def wrapper(func):
         @wraps(func)
         def new_func(*args, **kwargs):
+            parse_check_kwargs(func, check_args)
             if not callable(check_args[0]):
                 """ Check types """
                 assert len(check_args) >= (len(args)+len(kwargs)), \
@@ -63,7 +79,6 @@ def typecheck(*check_args):
 
                 # Check kwargs
                 parameters = get_fn_param(func)
-                parameters = [param.strip() for param in parameters]
                 for param, value in kwargs.items():
                     if param in parameters:
                         if check_args[parameters.index(param)] == "pass":
@@ -87,7 +102,7 @@ def typecheck(*check_args):
 
     check_args = parse_check_args(check_args)
 
-    if callable(check_args[0]):
+    if callable(len(check_args) >= 1 and check_args[0]):
         return wrapper(check_args[0])
     else:
         return wrapper
