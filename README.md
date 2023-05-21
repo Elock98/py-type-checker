@@ -30,6 +30,16 @@ def foo(bar, baz):
 
 ```
 
+Note that you can also set checks using keyword arguments.
+
+```
+from typechecker import typecheck
+
+@typecheck(baz=float, bar=int)
+def foo(bar, baz):
+    pass
+```
+
 ### Ignore Option
 
 ```
