@@ -1,5 +1,5 @@
 import unittest
-from typechecker import typecheck
+from typechecker import typecheck, TypeCheckError
 
 class TestTypeChecker(unittest.TestCase):
 
@@ -70,12 +70,12 @@ class TestTypeChecker(unittest.TestCase):
             return i
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             foo(6, 5)
 
         # Then
         self.assertEqual(str(exep.exception),
-                "TypeError: 6 is of type <class 'int'>, not of type <class 'NoneType'>")
+                "6 is of type <class 'int'>, not of type <class 'NoneType'>")
 
     def test_ignore(self):
         # Given
@@ -139,14 +139,14 @@ class TestTypeChecker(unittest.TestCase):
         res2 = bar(1, "2", 3)
         res3 = bar(1, "2", Foo())
 
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             bar(1, "2", "FOO")
 
         # Then
         self.assertEqual(res1, (int, str, float))
         self.assertEqual(res2, (int, str, int))
         self.assertEqual(res3, (int, str, Foo))
-        self.assertTrue(str(exep.exception).startswith("TypeError: FOO"))
+        self.assertTrue(str(exep.exception).startswith("FOO"))
         self.assertTrue(str(exep.exception).endswith("is of type <class 'str'>, not of type (<class '__main__.TestTypeChecker.test_multiple_options_arg.<locals>.Foo'>, <class 'int'>, <class 'float'>)"))
 
     def test_multiple_options_kwarg(self):
@@ -163,14 +163,14 @@ class TestTypeChecker(unittest.TestCase):
         res2 = bar(c=1, a=1, b="2")
         res3 = bar(c=Foo(), a=1, b="2")
 
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             bar(c="FOO", a=1, b="2")
 
         # Then
         self.assertEqual(res1, (int, str, float))
         self.assertEqual(res2, (int, str, int))
         self.assertEqual(res3, (int, str, Foo))
-        self.assertTrue(str(exep.exception).startswith("TypeError: FOO"))
+        self.assertTrue(str(exep.exception).startswith("FOO"))
         self.assertTrue(str(exep.exception).endswith("is of type <class 'str'>, not of type (<class '__main__.TestTypeChecker.test_multiple_options_kwarg.<locals>.Foo'>, <class 'int'>, <class 'float'>)"))
 
     def test_multiple_options_arg_ignore(self):
@@ -235,12 +235,12 @@ class TestTypeChecker(unittest.TestCase):
             return bar
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             res = foo("5")
 
         # Then
         self.assertEqual(str(exep.exception),
-                "TypeError: 5 is of type <class 'str'>, not of type <class 'int'>")
+                "5 is of type <class 'str'>, not of type <class 'int'>")
 
     def test_not_enough_check_args(self):
         # Given
@@ -249,12 +249,12 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeCheckError) as exep:
             res = foo(1, 2)
 
         # Then
         self.assertEqual(str(exep.exception),
-                f"TypecheckError: Cannot check all arguments given, not enough typecheck args given")
+                f"Cannot check all arguments given, not enough typecheck args given")
 
     def test_to_many_check_args(self):
         # Given
@@ -400,12 +400,12 @@ class TestTypeChecker(unittest.TestCase):
             return obj.get_faz()
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             bar(foo)
 
         # Then
         # (Split in two to ignore object address)
-        self.assertTrue(str(exep.exception).startswith("TypeError: <__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo"))
+        self.assertTrue(str(exep.exception).startswith("<__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo"))
         self.assertTrue(str(exep.exception).endswith("is of type <class '__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo'>, not of type <class '__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Baz'>"))
 
     def test_check_instance_method_args(self):
@@ -490,12 +490,12 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             res = foo(bar=1, baz=2)
 
         # Then
         self.assertEqual(str(exep.exception),
-                "TypeError: 2 is of type <class 'int'>, not of type <class 'str'>")
+                "2 is of type <class 'int'>, not of type <class 'str'>")
 
 
     def test_kwargs_unordered(self):
@@ -517,12 +517,12 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             res = foo(baz=1, bar=2)
 
         # Then
         self.assertEqual(str(exep.exception),
-                "TypeError: 1 is of type <class 'int'>, not of type <class 'str'>")
+                "1 is of type <class 'int'>, not of type <class 'str'>")
 
 
     def test_list_as_argument(self):
