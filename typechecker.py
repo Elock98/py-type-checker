@@ -3,6 +3,10 @@ from pydoc import locate
 from functools import partial
 import inspect
 
+class TypeCheckError(Exception):
+    """Raise when type-checker cannot check the arguments."""
+    pass
+
 def typecheck(*check_args, **check_kwargs):
     """
         Checks that arguments passed to function
@@ -13,6 +17,7 @@ def typecheck(*check_args, **check_kwargs):
         raise err_type(err_msg)
 
     t_error = partial(error, TypeError)
+    tc_error = partial(error, TypeCheckError)
 
     def get_fn_param(fn):
         return [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
@@ -61,8 +66,8 @@ def typecheck(*check_args, **check_kwargs):
             parse_check_kwargs(func, check_args)
             if not callable(check_args[0]):
                 """ Check types """
-                assert len(check_args) >= (len(args)+len(kwargs)), \
-                        f"TypecheckError: Cannot check all arguments given, not enough typecheck args given"
+                if not len(check_args) >= (len(args)+len(kwargs)):
+                        tc_error(f"Cannot check all arguments given, not enough typecheck args given")
                 # Check args
                 for index, arg in enumerate(args):
                     if check_args[index] == "pass":
