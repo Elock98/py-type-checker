@@ -1,5 +1,5 @@
 import unittest
-from typechecker import typecheck
+from typechecker import typecheck, TypeCheckError
 
 class TestTypeChecker(unittest.TestCase):
 
@@ -70,7 +70,7 @@ class TestTypeChecker(unittest.TestCase):
             return i
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             foo(6, 5)
 
         # Then
@@ -139,7 +139,7 @@ class TestTypeChecker(unittest.TestCase):
         res2 = bar(1, "2", 3)
         res3 = bar(1, "2", Foo())
 
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             bar(1, "2", "FOO")
 
         # Then
@@ -163,7 +163,7 @@ class TestTypeChecker(unittest.TestCase):
         res2 = bar(c=1, a=1, b="2")
         res3 = bar(c=Foo(), a=1, b="2")
 
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             bar(c="FOO", a=1, b="2")
 
         # Then
@@ -235,7 +235,7 @@ class TestTypeChecker(unittest.TestCase):
             return bar
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             res = foo("5")
 
         # Then
@@ -249,12 +249,12 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeCheckError) as exep:
             res = foo(1, 2)
 
         # Then
         self.assertEqual(str(exep.exception),
-                f"TypecheckError: Cannot check all arguments given, not enough typecheck args given")
+                f"Cannot check all arguments given, not enough typecheck args given")
 
     def test_to_many_check_args(self):
         # Given
@@ -400,7 +400,7 @@ class TestTypeChecker(unittest.TestCase):
             return obj.get_faz()
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             bar(foo)
 
         # Then
@@ -490,7 +490,7 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             res = foo(bar=1, baz=2)
 
         # Then
@@ -517,7 +517,7 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(Exception) as exep:
+        with self.assertRaises(TypeError) as exep:
             res = foo(baz=1, bar=2)
 
         # Then
