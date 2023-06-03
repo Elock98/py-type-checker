@@ -10,7 +10,7 @@ class TypeCheckError(Exception):
 def typecheck(*check_args, **check_kwargs):
     """
         Checks that arguments passed to function
-        is of the type passed to the typechecker.
+        is of the type passed to the type checker.
     """
 
     def error(err_type, err_msg):
@@ -20,101 +20,118 @@ def typecheck(*check_args, **check_kwargs):
     tc_error = partial(error, TypeCheckError)
 
     def get_fn_param(fn):
+        """ Returns a list of parameters belonging to fn """
         return [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
 
     def pass_filter(tup):
+        """ Filters out check tuples that contains pass as an option """
         return tup if "pass" not in tup else "pass"
 
-    def parse_check_kwargs(fn, check_args):
+    def setup_param_dict(fn, args, kwargs):
+        """ Creates and returns a dictionary of the types
+            that is to be checked, formatted as:
+                { parameter_name : expected_type }
+        """
         params = get_fn_param(fn)
 
-        for index, param in enumerate(params):
-            if param in check_kwargs:
-                # Process and add to check_args
-                check_args.insert(index, \
-                    check_kwargs[param] if str(check_kwargs[param]).startswith("<function") else \
-                    check_kwargs[param] if check_kwargs[param] == "pass" else \
-                    pass_filter(check_kwargs[param]) if isinstance(check_kwargs[param], tuple) else \
-                    [check_kwargs[param]] if str(check_kwargs[param]).startswith("<class '__main__.") else \
-                    'callable' if str(check_kwargs[param]) == '<built-in function callable>' else \
-                    str(check_kwargs[param]).replace("<class '", "").replace("'>", "")
-                    )
+        # Make a params dict with all values being 'unset'
+        params = { kw_param : 'unset' for kw_param in params }
 
-    def parse_check_args(ca):
-        # Convert input to managable type
-        #
-        # If no types given, leave as it is;
-        # If class insert into sub-list;
-        # If function set to callable check;
-        # If string 'pass' leave it
-        # If tuple leave it
-        # Else send primitive type as string;
-        return  [
-                    arg if str(arg).startswith("<function") else \
-                    arg if arg == "pass" else \
-                    pass_filter(arg) if isinstance(arg, tuple) else \
-                    [arg] if str(arg).startswith("<class '__main__.") else \
-                    'callable' if str(arg) == '<built-in function callable>' else \
-                    str(arg).replace("<class '", "").replace("'>", "") for arg in ca
-                ]
+        # Go through and add all args
+        for param, arg in zip(params, args):
+            params[param] = parse_arg(arg)
 
+        # Go through and add all kwargs (if collision throw error)
+        for param, check_type in kwargs.items():
+            try:
+                if params[param] is not 'unset':
+                    raise tc_error(f"The kwarg {param} is already set by arg")
+                params[param] = parse_arg(check_type)
+            except KeyError:
+                raise tc_error(f"The given kwarg {param} is not a parameter of function {fn}")
 
+        # Replace all 'unset' with 'pass'
+        for param in params:
+            if params[param] == "unset":
+                params[param] = 'pass'
+        return params
+
+    def unify_values(fn, args, kwargs):
+        """ Creates and returns a unified dictionary of given
+            arguments and keyword arguments, formatted as:
+                { parameter_name : given_value }
+        """
+        params = { param : 'unset' for param in get_fn_param(fn) }
+
+        # Add argument values
+        for param, arg in zip(params, args):
+            params[param] = arg
+
+        # Add kwarg values
+        for param in kwargs:
+            params[param] = kwargs[param]
+
+        return params
+
+    def parse_arg(parse_arg):
+        """ Convert input to manageable type
+
+            If no types given, leave as it is;
+            If class insert into sub-list;
+            If function set to callable check;
+            If string 'pass' leave it
+            If tuple leave it
+            Else send primitive type as string;
+        """
+        return      parse_arg if str(parse_arg).startswith("<function") else \
+                    parse_arg if parse_arg == "pass" else \
+                    pass_filter(parse_arg) if isinstance(parse_arg, tuple) else \
+                    [parse_arg] if str(parse_arg).startswith("<class '__main__.") else \
+                    'callable' if str(parse_arg) == '<built-in function callable>' else \
+                    str(parse_arg).replace("<class '", "").replace("'>", "")
 
     def wrapper(func):
         @wraps(func)
-        def new_func(*args, **kwargs):
-            parse_check_kwargs(func, check_args)
-            if not callable(check_args[0]):
-                """ Check types """
-                if not len(check_args) >= (len(args)+len(kwargs)):
-                        tc_error(f"Cannot check all arguments given, not enough typecheck args given")
-                # Check args
-                for index, arg in enumerate(args):
-                    if check_args[index] == "pass":
-                        continue
-                    elif check_args[index] == 'callable':
-                        if not callable(arg):
-                            t_error(f"{arg} is of type {type(arg)}, not of type callable")
-                    else:
-                        if not isinstance(check_args[index], (list, tuple)):
-                            arg_type = locate(check_args[index]) # Convert check arg string to type
-                            if arg_type is None:
-                                arg_type = type(None)
-                        else:
-                            if isinstance(check_args[index], list):
-                                arg_type = check_args[index][0]
-                            else:
-                                arg_type = tuple(check_args[index])
-                        if not isinstance(arg, arg_type):
-                            t_error(f"{arg} is of type {type(arg)}, not of type {arg_type}")
+        def typechecking(*args, **kwargs):
+            """ Performs the type checking """
 
-                # Check kwargs
-                parameters = get_fn_param(func)
-                for param, value in kwargs.items():
-                    if param in parameters:
-                        if check_args[parameters.index(param)] == "pass":
-                            continue
-                        elif check_args[parameters.index(param)] == "callable":
-                            if not callable(value):
-                                t_error(f"{arg} is of type {type(arg)}, not of type callable")
-                        else:
-                            if not isinstance(check_args[parameters.index(param)], (list, tuple)):
-                                kwarg_type = locate(check_args[parameters.index(param)])
-                            else:
-                                if isinstance(check_args[parameters.index(param)], list):
-                                    kwarg_type = check_args[parameters.index(param)][0]
-                                else:
-                                    kwarg_type = tuple(check_args[parameters.index(param)])
-                            if not isinstance(value, kwarg_type):
-                                t_error(f"{kwargs[param]} is of type {type(kwargs[param])}, not of type {kwarg_type}")
+            check_types = setup_param_dict(func, check_args, check_kwargs)
+            values = unify_values(func, args, kwargs)
+            # check_types and values are now dictionaries containing the
+            # same keys, now just check that the values are correct.
+
+            for param in check_types:
+                if check_types[param] == 'pass':
+                    continue
+                elif check_types[param] == 'callable':
+                    if not callable(values[param]):
+                        t_error(f"{values[param]} is of type {type(values[param])}, not of type callable")
+                else:
+                     if not isinstance(check_types[param], (list, tuple)): # If not class or tuple of optional types
+                         arg_type = locate(check_types[param]) # Convert check type string to checkable type
+                         if arg_type is None:
+                             arg_type = type(None)
+                     else:
+                         if isinstance(check_types[param], list): # If class instance
+                             arg_type = check_types[param][0]
+                         else:
+                             arg_type = tuple(check_types[param]) # If optional types
+
+                     if not isinstance(values[param], arg_type):
+                         t_error(f"{values[param]} is of type {type(values[param])}, not of type {arg_type}")
 
             return func(*args, **kwargs)
-        return new_func
+        return typechecking
 
-    check_args = parse_check_args(check_args)
+    def nocheckwrapper(func):
+        """ If no given checks, just run func and return value """
+        @wraps(func)
+        def some_func(*args, **kwargs):
+            return func(*args, **kwargs)
+        return some_func
 
-    if callable(len(check_args) >= 1 and check_args[0]):
-        return wrapper(check_args[0])
+    if len(check_args) == 1 and callable(parse_arg(check_args[0])):
+        return nocheckwrapper(check_args[0])
     else:
         return wrapper
 
