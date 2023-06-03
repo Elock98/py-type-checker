@@ -652,5 +652,19 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, (1, 2.3, "4"))
 
+
+    def test_set_same_arg_with_kwarg(self):
+        # Given
+        @typecheck(int, a=str)
+        def foo(a, b):
+            pass
+
+        # When
+        with self.assertRaises(TypeCheckError) as e:
+            foo(1, 3)
+
+        # Then
+        self.assertEqual(str(e.exception), "The kwarg a is already set by arg")
+
 if __name__ == "__main__":
     unittest.main()
