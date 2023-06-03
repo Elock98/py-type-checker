@@ -54,6 +54,49 @@ Doing this will type-check the values
 passed to 'a' and 'c', and ignore checking
 the value passed to 'b'.
 
+Note that it no longer is necessary to
+explicitly set a parameter to 'pass'
+(see examples below), since this is
+done automatically.
+
+```
+from typechecker import typecheck
+
+@typecheck(int, float)
+def foo(a, b, c, d):
+    pass
+```
+
+and
+
+```
+from typechecker import typecheck
+
+@typecheck(c=int, d=float)
+def foo(a, b, c, d):
+    pass
+```
+
+is the same as
+
+```
+from typechecker import typecheck
+
+@typecheck(int, float, 'pass', 'pass')
+def foo(a, b, c, d):
+    pass
+```
+
+and
+
+```
+from typechecker import typecheck
+
+@typecheck('pass', 'pass', int, float)
+def foo(a, b, c, d):
+    pass
+```
+
 ### Multiple Options
 
 ```
