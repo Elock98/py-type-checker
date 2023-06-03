@@ -39,6 +39,19 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 5)
 
+    def test_bad_check_kwargs(self):
+        # Given
+        @typecheck(baz=int)
+        def foo(bar):
+            return bar
+
+        # When
+        with self.assertRaises(TypeCheckError) as e:
+            res = foo(5)
+
+        # Then
+        self.assertTrue(str(e.exception).startswith("The given kwarg baz is not a parameter of function <function TestTypeChecker.test_bad_check_kwargs.<locals>.foo at"))
+
     def test_check_multiple_kwargs(self):
         # Given
         @typecheck(baz=int, bar=str)
@@ -249,12 +262,10 @@ class TestTypeChecker(unittest.TestCase):
             return (bar, baz)
 
         # When
-        with self.assertRaises(TypeCheckError) as exep:
-            res = foo(1, 2)
+        res = foo(1, 2)
 
         # Then
-        self.assertEqual(str(exep.exception),
-                f"Cannot check all arguments given, not enough typecheck args given")
+        self.assertEqual(res, (1, 2))
 
     def test_to_many_check_args(self):
         # Given
@@ -617,6 +628,43 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 1)
 
+    def test_non_set_check_args(self):
+        # Given
+        @typecheck(int, float)
+        def foo(a, b, c):
+            return (a, b, c)
+
+        # When
+        res = foo(1, 2.3, "4")
+
+        # Then
+        self.assertEqual(res, (1, 2.3, "4"))
+
+    def test_non_set_check_kwargs(self):
+        # Given
+        @typecheck(a=int, c=str)
+        def foo(a, b, c):
+            return (a, b, c)
+
+        # When
+        res = foo(1, 2.3, "4")
+
+        # Then
+        self.assertEqual(res, (1, 2.3, "4"))
+
+
+    def test_set_same_arg_with_kwarg(self):
+        # Given
+        @typecheck(int, a=str)
+        def foo(a, b):
+            pass
+
+        # When
+        with self.assertRaises(TypeCheckError) as e:
+            foo(1, 3)
+
+        # Then
+        self.assertEqual(str(e.exception), "The kwarg a is already set by arg")
 
 if __name__ == "__main__":
     unittest.main()
