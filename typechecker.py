@@ -49,10 +49,10 @@ def typecheck(*check_args, **check_kwargs):
         for param, check_type in kwargs.items():
             try:
                 if params[param] is not 'unset':
-                    raise tc_error(f"The kwarg {param} is already set by arg")
+                    raise tc_error(f"The kwarg '{param}' is already set by arg")
                 params[param] = parse_arg(check_type)
             except KeyError:
-                raise tc_error(f"The given kwarg {param} is not a parameter of function {fn}")
+                raise tc_error(f"The given kwarg '{param}' is not a parameter of function '{fn}'")
 
         # Replace all 'unset' with 'pass'
         for param in params:
@@ -109,8 +109,8 @@ def typecheck(*check_args, **check_kwargs):
                     continue
                 elif check_types[param] == 'callable':
                     if not callable(values[param]):
-                        t_error(f"The value {values[param]} sent to parameter {param} "\
-                                f"of function {get_fn_name(func)} is of type {type(values[param])}, expected callable")
+                        t_error(f"The value '{values[param]}' sent to parameter '{param}' "\
+                                f"of function '{get_fn_name(func)}' is of type {type(values[param])}, expected callable")
                 else:
                      if not isinstance(check_types[param], (list, tuple)): # If not class or tuple of optional types
                          arg_type = locate(check_types[param]) # Convert check type string to checkable type
@@ -123,8 +123,8 @@ def typecheck(*check_args, **check_kwargs):
                              arg_type = tuple(check_types[param]) # If optional types
 
                      if not isinstance(values[param], arg_type):
-                         t_error(f"The value {values[param]} sent to parameter {param} "\
-                                 f"of function {get_fn_name(func)} is of type {type(values[param])}, expected type {arg_type}")
+                         t_error(f"The value '{values[param]}' sent to parameter '{param}' "\
+                                 f"of function '{get_fn_name(func)}' is of type {type(values[param])}, expected type {arg_type}")
 
             return func(*args, **kwargs)
         return typechecking

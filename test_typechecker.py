@@ -50,8 +50,8 @@ class TestTypeChecker(unittest.TestCase):
             res = foo(5)
 
         # Then
-        self.assertTrue(str(e.exception).startswith("The given kwarg baz "\
-                "is not a parameter of function <function TestTypeChecker."\
+        self.assertTrue(str(e.exception).startswith("The given kwarg 'baz' "\
+                "is not a parameter of function '<function TestTypeChecker."\
                 "test_bad_check_kwargs.<locals>.foo at"))
 
     def test_check_multiple_kwargs(self):
@@ -90,7 +90,7 @@ class TestTypeChecker(unittest.TestCase):
 
         # Then
         self.assertEqual(str(exep.exception),
-                "The value 6 sent to parameter n of function foo "\
+                "The value '6' sent to parameter 'n' of function 'foo' "\
                 "is of type <class 'int'>, expected type <class 'NoneType'>")
 
     def test_ignore(self):
@@ -163,8 +163,8 @@ class TestTypeChecker(unittest.TestCase):
         self.assertEqual(res2, (int, str, int))
         self.assertEqual(res3, (int, str, Foo))
         self.assertEqual(str(exep.exception),
-                "The value FOO sent to "\
-                "parameter c of function bar is of type <class 'str'>, "\
+                "The value 'FOO' sent to "\
+                "parameter 'c' of function 'bar' is of type <class 'str'>, "\
                 "expected type "\
                 "(<class '__main__.TestTypeChecker.test_multiple_options_arg.<locals>.Foo'>, "\
                 "<class 'int'>, <class 'float'>)")
@@ -191,8 +191,8 @@ class TestTypeChecker(unittest.TestCase):
         self.assertEqual(res2, (int, str, int))
         self.assertEqual(res3, (int, str, Foo))
         self.assertEqual(str(exep.exception),
-                "The value FOO sent to "\
-                "parameter c of function bar is of type <class 'str'>, "\
+                "The value 'FOO' sent to "\
+                "parameter 'c' of function 'bar' is of type <class 'str'>, "\
                 "expected type "\
                 "(<class '__main__.TestTypeChecker.test_multiple_options_kwarg.<locals>.Foo'>, "\
                 "<class 'int'>, <class 'float'>)")
@@ -264,7 +264,7 @@ class TestTypeChecker(unittest.TestCase):
 
         # Then
         self.assertEqual(str(exep.exception),
-                "The value 5 sent to parameter bar of function foo "\
+                "The value '5' sent to parameter 'bar' of function 'foo' "\
                 "is of type <class 'str'>, expected type <class 'int'>")
 
     def test_not_enough_check_args(self):
@@ -357,7 +357,7 @@ class TestTypeChecker(unittest.TestCase):
 
         # Then
         self.assertEqual(str(e.exception),
-                "The value 5 sent to parameter fn of function foo is of type <class 'int'>, "\
+                "The value '5' sent to parameter 'fn' of function 'foo' is of type <class 'int'>, "\
                 "expected callable")
 
     def test_class_instance_as_argument(self):
@@ -443,8 +443,8 @@ class TestTypeChecker(unittest.TestCase):
 
         # Then
         self.assertRegex(str(exep.exception), \
-                "The value <__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo "\
-                "object at .*> sent to parameter obj of function bar is of type "\
+                "The value '<__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo "\
+                "object at .*>' sent to parameter 'obj' of function 'bar' is of type "\
                 "<class '__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Foo'>, "\
                 "expected type <class '__main__.TestTypeChecker.test_wrong_class_instance_as_argument.<locals>.Baz'>")
 
@@ -535,7 +535,7 @@ class TestTypeChecker(unittest.TestCase):
 
         # Then
         self.assertEqual(str(exep.exception),
-                "The value 2 sent to parameter baz of function foo "\
+                "The value '2' sent to parameter 'baz' of function 'foo' "\
                         "is of type <class 'int'>, expected type <class 'str'>")
 
 
@@ -563,7 +563,7 @@ class TestTypeChecker(unittest.TestCase):
 
         # Then
         self.assertEqual(str(exep.exception),
-                "The value 1 sent to parameter baz of function foo "\
+                "The value '1' sent to parameter 'baz' of function 'foo' "\
                 "is of type <class 'int'>, expected type <class 'str'>")
 
 
@@ -695,7 +695,7 @@ class TestTypeChecker(unittest.TestCase):
             foo(1, 3)
 
         # Then
-        self.assertEqual(str(e.exception), "The kwarg a is already set by arg")
+        self.assertEqual(str(e.exception), "The kwarg 'a' is already set by arg")
 
 if __name__ == "__main__":
     unittest.main()
