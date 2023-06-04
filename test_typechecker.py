@@ -697,5 +697,82 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(str(e.exception), "The kwarg 'a' is already set by arg")
 
+    def test_return_value_check(self):
+        # Given
+        @typecheck(int, b=float, check_return_type=float)
+        def foo(a, b):
+            return a/b
+
+        # When
+        res = foo(5, 0.5)
+
+        # Then
+        self.assertEqual(res, 10.0)
+
+
+    def test_return_value_check_error(self):
+        # Given
+        @typecheck(int, b=float, check_return_type=str)
+        def foo(a, b):
+            return a/b
+
+        # When
+        with self.assertRaises(TypeError) as e:
+            res = foo(5, 0.5)
+
+        # Then
+        self.assertEqual(str(e.exception),
+                "The value '10.0' returned from function 'foo' is of type <class 'float'>, "\
+                "expected type <class 'str'>")
+
+    def test_return_value_check_multiple(self):
+        # Given
+        class Bar:
+            pass
+
+        bar = Bar()
+
+        @typecheck(int, b=(float, int, Bar), check_return_type=(float, int, Bar))
+        def foo(a, b):
+            return b
+
+        # When
+        res1 = foo(5, 0.5)
+        res2 = foo(5, 1)
+        res3 = foo(5, bar)
+
+        # Then
+        self.assertEqual(res1, 0.5)
+        self.assertEqual(res2, 1)
+        self.assertEqual(res3, bar)
+
+
+    def test_return_value_check_multiple_error(self):
+        # Given
+        class Bar:
+            pass
+
+        bar = Bar()
+
+        @typecheck(int, b=(float, int, Bar), check_return_type=(float, int))
+        def foo(a, b):
+            return b
+
+        # When
+        with self.assertRaises(TypeError) as e:
+            res = foo(5, bar)
+
+        # Then
+        self.assertTrue(str(e.exception).startswith( \
+                "The value '<__main__.TestTypeChecker.test_return_value_check_multiple_error.<locals>.Bar "\
+                "object at"))
+
+        self.assertTrue(str(e.exception).endswith( \
+                ">' returned from function 'foo' is of type "\
+                "<class '__main__.TestTypeChecker.test_return_value_check_multiple_error.<locals>.Bar'>, "\
+                "expected type (<class 'float'>, <class 'int'>)"))
+
+
+
 if __name__ == "__main__":
     unittest.main()

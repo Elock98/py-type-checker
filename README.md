@@ -9,6 +9,7 @@ can be used to ensure that the correct type is passed to functions.
 4. Functions as Arguments
 5. Class instance as Arguments
 6. Checking Class and Instance Methods
+7. Checking return type
 
 ### Basic Usage
 
@@ -175,3 +176,27 @@ you need to set the first parameter to 'pass' due to them
 taking a reference to the instance or the class. Also note
 that the order of decorators matter, the type-checker
 needs to be the last decorator added.
+
+### Checking return type
+
+It is possible to check the return type of the function as well.
+
+The following will work fine:
+
+```
+@typecheck(int, b=float, check_return_type=str)
+def foo(a, b):
+    return str(a/b)
+```
+
+and this will raise a TypeError:
+
+```
+@typecheck(int, b=float, check_return_type=str)
+def foo(a, b):
+    return a/b
+```
+
+Note that the keyword-argument 'check\_return\_type' is reserved by
+the type-checker, meaning that if you want to use the type-checker
+your function can't have a parameter with the same name.

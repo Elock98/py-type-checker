@@ -7,7 +7,7 @@ class TypeCheckError(Exception):
     """Raise when type-checker cannot check the arguments."""
     pass
 
-def typecheck(*check_args, **check_kwargs):
+def typecheck(*check_args, check_return_type='unset', **check_kwargs):
     """
         Checks that arguments passed to function
         is of the type passed to the type checker.
@@ -126,7 +126,14 @@ def typecheck(*check_args, **check_kwargs):
                          t_error(f"The value '{values[param]}' sent to parameter '{param}' "\
                                  f"of function '{get_fn_name(func)}' is of type {type(values[param])}, expected type {arg_type}")
 
-            return func(*args, **kwargs)
+            result = func(*args, **kwargs)
+
+            if check_return_type is not 'unset' and not isinstance(result, check_return_type):
+                t_error(f"The value '{result}' returned from function '{get_fn_name(func)}' is of type {type(result)}, "\
+                f"expected type {check_return_type}")
+            else:
+                return result
+
         return typechecking
 
     def nocheckwrapper(func):
