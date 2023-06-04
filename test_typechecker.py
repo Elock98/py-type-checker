@@ -345,6 +345,21 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 25)
 
+    def test_function_error(self):
+        # Given
+        @typecheck(callable)
+        def foo(fn):
+            return fn(5)
+
+        # When
+        with self.assertRaises(TypeError) as e:
+            res = foo(5)
+
+        # Then
+        self.assertEqual(str(e.exception),
+                "The value 5 sent to parameter fn of function foo is of type <class 'int'>, "\
+                "expected callable")
+
     def test_class_instance_as_argument(self):
         # Given
         class Foo:

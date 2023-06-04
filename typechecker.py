@@ -109,7 +109,7 @@ def typecheck(*check_args, **check_kwargs):
                     continue
                 elif check_types[param] == 'callable':
                     if not callable(values[param]):
-                        t_error(f"{values[param]} is of type {type(values[param])}, not of type callable")
+                        t_error(f"The value {values[param]} sent to parameter {param} of function {get_fn_name(func)} is of type {type(values[param])}, expected callable")
                 else:
                      if not isinstance(check_types[param], (list, tuple)): # If not class or tuple of optional types
                          arg_type = locate(check_types[param]) # Convert check type string to checkable type
