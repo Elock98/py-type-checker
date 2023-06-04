@@ -122,7 +122,7 @@ def typecheck(*check_args, **check_kwargs):
                              arg_type = tuple(check_types[param]) # If optional types
 
                      if not isinstance(values[param], arg_type):
-                         t_error(f"{values[param]} is of type {type(values[param])}, not of type {arg_type}")
+                         t_error(f"The value {values[param]} sent to parameter {param} of function {get_fn_name(func)} is of type {type(values[param])}, expected type {arg_type}")
 
             return func(*args, **kwargs)
         return typechecking
