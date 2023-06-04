@@ -189,6 +189,12 @@ def foo(a, b):
     return str(a/b)
 ```
 
+```
+@typecheck(int, b=float, check_return_type=(str, int))
+def foo(a, b):
+    return str(a/b)
+```
+
 and this will raise a TypeError:
 
 ```
