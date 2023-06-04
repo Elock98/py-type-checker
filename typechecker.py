@@ -23,6 +23,10 @@ def typecheck(*check_args, **check_kwargs):
         """ Returns a list of parameters belonging to fn """
         return [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
 
+    def get_fn_name(fn):
+        """ Returns a string of the functions name """
+        return str(fn).split()[1].split(".")[-1]
+
     def pass_filter(tup):
         """ Filters out check tuples that contains pass as an option """
         return tup if "pass" not in tup else "pass"
