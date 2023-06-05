@@ -3,11 +3,17 @@ from pydoc import locate
 from functools import partial
 import inspect
 
+class TypeCheckerIgnore:
+    pass
+
+class TypeCheckerUnset:
+    pass
+
 class TypeCheckError(Exception):
     """Raise when type-checker cannot check the arguments."""
     pass
 
-def typecheck(*check_args, check_return_type='unset', **check_kwargs):
+def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
     """
         Checks that arguments passed to function
         is of the type passed to the type checker.
@@ -18,6 +24,9 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
 
     t_error = partial(error, TypeError)
     tc_error = partial(error, TypeCheckError)
+
+    IGNORE = TypeCheckerIgnore()
+    UNSET = TypeCheckerUnset()
 
     def get_fn_param(fn):
         """ Returns a list of parameters belonging to fn """
@@ -39,7 +48,7 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
 
     def pass_filter(tup):
         """ Filters out check tuples that contains pass as an option """
-        return tup if "pass" not in tup else "pass"
+        return tup if "pass" not in tup else IGNORE
 
     def setup_param_dict(fn, args, kwargs):
         """ Creates and returns a dictionary of the types
@@ -48,8 +57,8 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
         """
         params = get_fn_param(fn)
 
-        # Make a params dict with all values being 'unset'
-        params = { kw_param : 'unset' for kw_param in params }
+        # Make a params dict with all values being UNSET
+        params = { kw_param : UNSET for kw_param in params }
 
         # Go through and add all args
         for param, arg in zip(params, args):
@@ -58,16 +67,16 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
         # Go through and add all kwargs (if collision throw error)
         for param, check_type in kwargs.items():
             try:
-                if params[param] is not 'unset':
+                if params[param] is not UNSET:
                     raise tc_error(f"The kwarg '{param}' is already set by arg")
                 params[param] = parse_arg(check_type)
             except KeyError:
                 raise tc_error(f"The given kwarg '{param}' is not a parameter of function '{fn}'")
 
-        # Replace all 'unset' with 'pass'
+        # Replace all UNSET with IGNORE
         for param in params:
-            if params[param] == "unset":
-                params[param] = 'pass'
+            if params[param] == UNSET:
+                params[param] = IGNORE
         return params
 
     def unify_values(fn, args, kwargs):
@@ -75,7 +84,7 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
             arguments and keyword arguments, formatted as:
                 { parameter_name : given_value }
         """
-        params = { param : 'unset' for param in get_fn_param(fn) }
+        params = { param : UNSET for param in get_fn_param(fn) }
 
         # Add argument values
         for param, arg in zip(params, args):
@@ -93,12 +102,12 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
             If no types given, leave as it is;
             If class insert into sub-list;
             If function set to callable check;
-            If string 'pass' leave it
+            If string 'pass' set to IGNORE
             If tuple leave it
             Else send primitive type as string;
         """
         return      parse_arg if str(parse_arg).startswith("<function") else \
-                    parse_arg if parse_arg == "pass" else \
+                    IGNORE if parse_arg == "pass" else \
                     pass_filter(parse_arg) if isinstance(parse_arg, tuple) else \
                     [parse_arg] if str(parse_arg).startswith("<class '__main__.") else \
                     'callable' if str(parse_arg) == '<built-in function callable>' else \
@@ -116,7 +125,7 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
             # same keys, now just check that the values are correct.
 
             for param in check_types:
-                if check_types[param] == 'pass':
+                if check_types[param] == IGNORE:
                     continue
                 elif check_types[param] == 'callable':
                     if not callable(values[param]):
@@ -133,7 +142,7 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
                          else:
                              arg_type = tuple(check_types[param]) # If optional types
 
-                     if values[param] == 'unset':
+                     if values[param] == UNSET:
                          tc_error(f"The parameter '{param}' got no value, expected type {arg_type}")
 
                      if not isinstance(values[param], arg_type):
@@ -142,7 +151,7 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
 
             result = func(*args, **kwargs)
 
-            if check_return_type is not 'unset' and not isinstance(result, check_return_type):
+            if check_return_type is not TypeCheckerUnset and not isinstance(result, check_return_type):
                 t_error(f"The value '{result}' returned from function '{get_fn_name(func)}' is of type {type(result)}, "\
                 f"expected type {check_return_type}")
             else:
