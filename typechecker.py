@@ -21,7 +21,17 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
 
     def get_fn_param(fn):
         """ Returns a list of parameters belonging to fn """
-        return [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
+
+        # Get parameter list
+        params = [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
+
+        # Remove type hints
+        params = [param.split(':')[0] for param in params]
+
+        # Remove default values
+        params = [param.split('=')[0] for param in params]
+
+        return params
 
     def get_fn_name(fn):
         """ Returns a string of the functions name """
@@ -94,6 +104,7 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
                     'callable' if str(parse_arg) == '<built-in function callable>' else \
                     str(parse_arg).replace("<class '", "").replace("'>", "")
 
+
     def wrapper(func):
         @wraps(func)
         def typechecking(*args, **kwargs):
@@ -121,6 +132,9 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
                              arg_type = check_types[param][0]
                          else:
                              arg_type = tuple(check_types[param]) # If optional types
+
+                     if values[param] == 'unset':
+                         tc_error(f"The parameter '{param}' got no value, expected type {arg_type}")
 
                      if not isinstance(values[param], arg_type):
                          t_error(f"The value '{values[param]}' sent to parameter '{param}' "\

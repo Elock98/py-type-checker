@@ -773,6 +773,94 @@ class TestTypeChecker(unittest.TestCase):
                 "expected type (<class 'float'>, <class 'int'>)"))
 
 
+    def test_ignore_type_hints_args(self):
+        # Given
+        @typecheck(int, str, float, check_return_type=tuple)
+        def foo(a: int, b: str, c: float) -> tuple:
+            return (a, b, c)
+
+        # When
+        res = foo(1, "2", 3.0)
+
+        # Then
+        self.assertEqual(res, (1, "2", 3.0))
+
+    def test_ignore_type_hints_kwargs(self):
+        # Given
+        @typecheck(a=int, c=float, b=str, check_return_type=tuple)
+        def foo(a: int, b: str, c: float) -> tuple:
+            return (a, b, c)
+
+        # When
+        res = foo(1, "2", 3.0)
+
+        # Then
+        self.assertEqual(res, (1, "2", 3.0))
+
+    def test_ignore_default_values_args(self):
+        # Given
+        @typecheck(int, float, str)
+        def foo(a=1, b=1.1, c="1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_values_kwargs(self):
+        # Given
+        @typecheck(a=int, b=float, c=str)
+        def foo(a=1, b=1.1, c="1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_values_and_type_hints_args(self):
+        # Given
+        @typecheck(int, float, str)
+        def foo(a:str = 1, b:float = 1.1, c:str = "1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_values_and_type_hints_kwargs(self):
+        # Given
+        @typecheck(a=int, b=float, c=str)
+        def foo(a:int = 1, b:float = 1.1, c:str = "1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_value_error(self):
+        # Given
+        @typecheck(int, str)
+        def foo(a, b=None):
+            return (a, b)
+
+        # When
+        with self.assertRaises(TypeCheckError) as e:
+            res = foo(1)
+
+        # Then
+        self.assertEqual(str(e.exception), \
+                "The parameter 'b' got no value, expected type <class 'str'>")
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
