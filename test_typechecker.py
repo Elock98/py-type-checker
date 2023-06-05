@@ -824,7 +824,7 @@ class TestTypeChecker(unittest.TestCase):
     def test_ignore_default_values_and_type_hints_args(self):
         # Given
         @typecheck(int, float, str)
-        def foo(a:int = 1, b:float = 1.1, c:str = "1"):
+        def foo(a:str = 1, b:float = 1.1, c:str = "1"):
             return (a, b, c)
 
         # When
