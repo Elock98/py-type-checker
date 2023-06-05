@@ -210,8 +210,10 @@ your function can't have a parameter with the same name.
 
 ### Type Hints and Default Values
 
-Currently the type-checker ignores type hints and default values.
+Currently the type-checker ignores type hints.
 This means that there can be a mismatch between the type hints and
-what the type-checker expects (without any issues). Also, if there
-is a default value and the type-checker expects a value to check,
-it will throw an error if no value is given.
+what the type-checker expects (without any issues).
+
+When using default values the type-checker will ignore checking
+when no value is given, however if there is no default value
+and no value given the type-checker will throw a TypeCheckError.
