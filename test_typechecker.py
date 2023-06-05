@@ -797,6 +797,56 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, (1, "2", 3.0))
 
+    def test_ignore_default_values_args(self):
+        # Given
+        @typecheck(int, float, str)
+        def foo(a=1, b=1.1, c="1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_values_kwargs(self):
+        # Given
+        @typecheck(a=int, b=float, c=str)
+        def foo(a=1, b=1.1, c="1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_values_and_type_hints_args(self):
+        # Given
+        @typecheck(int, float, str)
+        def foo(a:int = 1, b:float = 1.1, c:str = "1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+    def test_ignore_default_values_and_type_hints_kwargs(self):
+        # Given
+        @typecheck(a=int, b=float, c=str)
+        def foo(a:int = 1, b:float = 1.1, c:str = "1"):
+            return (a, b, c)
+
+        # When
+        res = foo(2, 2.2, "2")
+
+        # Then
+        self.assertEqual(res, (2, 2.2, "2"))
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
