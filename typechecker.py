@@ -29,7 +29,8 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
     UNSET = TypeCheckerUnset()
 
     def get_fn_param(fn):
-        """ Returns a list of parameters belonging to fn """
+        """ Returns a list of parameters and a list of
+        default values belonging to fn """
 
         # Get parameter list
         params = [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
@@ -37,10 +38,13 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
         # Remove type hints
         params = [param.split(':')[0] for param in params]
 
+        # Store possible default values in separate list
+        defaults = [param.split('=')[0] for param in params if len(param.split('=')) > 1 ]
+
         # Remove default values
         params = [param.split('=')[0] for param in params]
 
-        return params
+        return params, defaults
 
     def get_fn_name(fn):
         """ Returns a string of the functions name """
@@ -55,7 +59,7 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
             that is to be checked, formatted as:
                 { parameter_name : expected_type }
         """
-        params = get_fn_param(fn)
+        params, _ = get_fn_param(fn)
 
         # Make a params dict with all values being UNSET
         params = { kw_param : UNSET for kw_param in params }
@@ -84,7 +88,8 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
             arguments and keyword arguments, formatted as:
                 { parameter_name : given_value }
         """
-        params = { param : UNSET for param in get_fn_param(fn) }
+        params, defaults = get_fn_param(fn)
+        params = { param : UNSET for param in params }
 
         # Add argument values
         for param, arg in zip(params, args):
@@ -93,6 +98,17 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
         # Add kwarg values
         for param in kwargs:
             params[param] = kwargs[param]
+
+        # Check for UNSET, if UNSET and in defaults
+        # set to IGNORE
+        for param, value in params.items():
+            if value != UNSET:
+                continue
+
+            if param not in defaults:
+                tc_error(f"The parameter '{param}' got no value")
+
+            params[param] = IGNORE
 
         return params
 
@@ -125,7 +141,7 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
             # same keys, now just check that the values are correct.
 
             for param in check_types:
-                if check_types[param] == IGNORE:
+                if check_types[param] == IGNORE or values[param] == IGNORE:
                     continue
                 elif check_types[param] == 'callable':
                     if not callable(values[param]):
@@ -141,9 +157,6 @@ def typecheck(*check_args, check_return_type=TypeCheckerUnset, **check_kwargs):
                              arg_type = check_types[param][0]
                          else:
                              arg_type = tuple(check_types[param]) # If optional types
-
-                     if values[param] == UNSET:
-                         tc_error(f"The parameter '{param}' got no value, expected type {arg_type}")
 
                      if not isinstance(values[param], arg_type):
                          t_error(f"The value '{values[param]}' sent to parameter '{param}' "\

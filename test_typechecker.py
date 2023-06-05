@@ -845,22 +845,32 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, (2, 2.2, "2"))
 
-    def test_ignore_default_value_error(self):
+    def test_ignore_default_value(self):
         # Given
         @typecheck(int, str)
         def foo(a, b=None):
             return (a, b)
 
         # When
+        res = foo(1)
+
+        # Then
+        self.assertEqual(res, (1, None))
+
+
+    def test_no_value_given(self):
+        # Given
+        @typecheck(int)
+        def foo(a, b):
+            return (a, b)
+
+        # When
         with self.assertRaises(TypeCheckError) as e:
-            res = foo(1)
+            res = foo()
 
         # Then
         self.assertEqual(str(e.exception), \
-                "The parameter 'b' got no value, expected type <class 'str'>")
-
-
-
+                "The parameter 'a' got no value")
 
 if __name__ == "__main__":
     unittest.main()
