@@ -773,6 +773,30 @@ class TestTypeChecker(unittest.TestCase):
                 "expected type (<class 'float'>, <class 'int'>)"))
 
 
+    def test_ignore_type_hints_args(self):
+        # Given
+        @typecheck(int, str, float, check_return_type=tuple)
+        def foo(a: int, b: str, c: float) -> tuple:
+            return (a, b, c)
+
+        # When
+        res = foo(1, "2", 3.0)
+
+        # Then
+        self.assertEqual(res, (1, "2", 3.0))
+
+    def test_ignore_type_hints_kwargs(self):
+        # Given
+        @typecheck(a=int, c=float, b=str, check_return_type=tuple)
+        def foo(a: int, b: str, c: float) -> tuple:
+            return (a, b, c)
+
+        # When
+        res = foo(1, "2", 3.0)
+
+        # Then
+        self.assertEqual(res, (1, "2", 3.0))
+
 
 if __name__ == "__main__":
     unittest.main()

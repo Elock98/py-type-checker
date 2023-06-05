@@ -21,7 +21,14 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
 
     def get_fn_param(fn):
         """ Returns a list of parameters belonging to fn """
-        return [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
+
+        # Get parameter list
+        params = [param.strip() for param in str(inspect.signature(fn)).replace("(", "").replace(")", "").split(",")]
+
+        # Remove type hints
+        params = [param.split(':')[0] for param in params]
+
+        return params
 
     def get_fn_name(fn):
         """ Returns a string of the functions name """
