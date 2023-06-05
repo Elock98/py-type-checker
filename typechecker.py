@@ -28,6 +28,9 @@ def typecheck(*check_args, check_return_type='unset', **check_kwargs):
         # Remove type hints
         params = [param.split(':')[0] for param in params]
 
+        # Remove default values
+        params = [param.split('=')[0] for param in params]
+
         return params
 
     def get_fn_name(fn):
