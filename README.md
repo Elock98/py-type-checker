@@ -20,8 +20,10 @@ from typechecker import typecheck
 # example without type-checker decorator
 
 def foo(bar, baz):
-    assert isinstance(bar, int), f"The value given to bar is not type int"
-    assert isinstance(baz, float), f"The value given to baz is not type float"
+    if not isinstance(bar, int):
+        raise TypeError("The value given to bar is not type int")
+    if not isinstance(baz, float):
+        raise TypeError("The value given to baz is not type float")
     pass
 
 # the same example using the type-checker decorator
