@@ -164,6 +164,10 @@ from typechecker import typecheck
 
 class Foo:
     @typecheck('pass', int)
+    def __init__(self, i):
+        self.i = i
+
+    @typecheck('pass', int)
     def bar(self, i):
         pass
 
@@ -185,6 +189,10 @@ type-checker needs to be the last decorator added.
 from typechecker import typecheck
 
 class Foo:
+    @typecheck(i=int)
+    def __init__(self, i):
+        self.i = i
+
     @typecheck(i=int)
     def bar(self, i):
         pass
