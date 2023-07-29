@@ -463,12 +463,68 @@ class TestTypeChecker(unittest.TestCase):
         # Then
         self.assertEqual(res, 5)
 
+    def test_check_instance_method_check_kwargs(self):
+        # Given
+        class Foo:
+            @typecheck(i=int)
+            def bar(self, i):
+                return i
+
+        foo = Foo()
+
+        # When
+        res = foo.bar(5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+    def test_check_instance__init__method_args(self):
+        # Given
+        class Foo:
+            @typecheck("pass", int)
+            def __init__(self, i):
+                self.i = i
+
+        # When
+        foo = Foo(5)
+
+        # Then
+        self.assertEqual(foo.i, 5)
+
+    def test_check_instance__init__method_kargs(self):
+        # Given
+        class Foo:
+            @typecheck(i=int)
+            def __init__(self, i):
+                self.i = i
+
+        # When
+        foo = Foo(5)
+
+        # Then
+        self.assertEqual(foo.i, 5)
 
     def test_check_class_method_args(self):
         # Given
         class Foo:
             @classmethod
             @typecheck("pass", int)
+            def bar(self, i):
+                return i
+
+        foo = Foo()
+
+        # When
+        res = foo.bar(5)
+
+        # Then
+        self.assertEqual(res, 5)
+
+    def test_check_class_method_check_kwargs(self):
+        # Given
+        class Foo:
+            @classmethod
+            @typecheck(i=int)
             def bar(self, i):
                 return i
 
