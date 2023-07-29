@@ -176,9 +176,25 @@ class Foo:
 
 Note that when type-checking class and instance methods
 you need to set the first parameter to 'pass' due to them
-taking a reference to the instance or the class. Also note
-that the order of decorators matter, the type-checker
-needs to be the last decorator added.
+taking a reference to the instance or the class. This is
+only needed if you don't use kwargs (see example below).
+Also note that the order of decorators matter, the
+type-checker needs to be the last decorator added.
+
+```
+from typechecker import typecheck
+
+class Foo:
+    @typecheck(i=int)
+    def bar(self, i):
+        pass
+
+    @classmethod
+    @typecheck(i=int)
+    def baz(cls, i):
+        pass
+
+```
 
 ### Checking Return Type
 
